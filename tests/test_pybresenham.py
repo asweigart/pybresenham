@@ -30,6 +30,9 @@ def test_line():
     assert list(pybresenham.line(0, 0, 5, -15, _skipFirst=True)) == [(0, -1), (1, -2), (1, -3), (1, -4), (2, -5), (2, -6), (2, -7), (3, -8), (3, -9), (3, -10), (4, -11), (4, -12), (4, -13), (5, -14), (5, -15)]
     assert list(pybresenham.line(5, -15, 0, 0, _skipFirst=True)) == [(5, -14), (4, -13), (4, -12), (4, -11), (3, -10), (3, -9), (3, -8), (2, -7), (2, -6), (2, -5), (1, -4), (1, -3), (1, -2), (0, -1), (0, 0)]
 
+    with pytest.raises(pybresenham.PyBresenhamException):
+        list(pybresenham.line(0, 0, 5, 5, _skipFirst='invalid'))
+
     # Test unimplemented parts.
     with pytest.raises(NotImplementedError):
         list(pybresenham.line(0,0,0,0,thickness=2))
@@ -43,6 +46,8 @@ def test_lines():
     assert list(pybresenham.lines([(0, 0), (2, 0), (2, 2)])) == [(0, 0), (1, 0), (2, 0), (2, 1), (2, 2)]
 
     # Test invalid points arguments.
+    with pytest.raises(pybresenham.PyBresenhamException):
+        pybresenham.lines(42)
     with pytest.raises(pybresenham.PyBresenhamException):
         pybresenham.lines([(0, 0)]) # only 1 point
     with pytest.raises(pybresenham.PyBresenhamException):
