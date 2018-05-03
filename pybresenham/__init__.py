@@ -2,6 +2,7 @@
 # NOTE: As a design decision, these functions will always yield two-integer tuples (and not floats or other types).
 # NOTE: The *Vertices() functions return just the vertices. Drawing the complete shape usually involves just passing these vertices to the lines() function.
 
+__version__ = '0.0.1'
 
 import itertools
 import math
