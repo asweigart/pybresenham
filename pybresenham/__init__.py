@@ -4,6 +4,7 @@
 
 
 import itertools
+import math
 
 
 # Constants for end cap styles.
@@ -22,9 +23,22 @@ def _checkForIntOrFloat(arg):
         raise PyBresenhamException('argument must be int or float, not %s' % (arg.__class__.__name__))
 
 
-def rotatePoints(points, originx, originy):
-    raise NotImplementedError('The pybresenham module is under development. You can contribute at https://github.com/asweigart/pybresenham')
+def rotatePoint(x, y, rotationDegrees, pivotx=0, pivoty=0):
+    it = rotatePoints([(x, y)], rotationDegrees, pivotx, pivoty)
+    return next(it)
 
+
+def rotatePoints(points, rotationDegrees, pivotx=0, pivoty=0):
+    rotationRadians = math.radians(rotationDegrees % 360)
+
+    for x, y in points:
+        x -= pivotx
+        y -= pivoty
+        x, y = x * math.cos(rotationRadians) - y * math.sin(rotationRadians), x * math.sin(rotationRadians) + y * math.cos(rotationRadians)
+        x += pivotx
+        y += pivoty
+
+        yield int(x), int(y)
 
 def line(x1, y1, x2, y2, thickness=1, endcap=None, viewport=None, _skipFirst=False):
     if (thickness != 1) or (endcap is not None) or (viewport is not None):
@@ -92,7 +106,7 @@ def line(x1, y1, x2, y2, thickness=1, endcap=None, viewport=None, _skipFirst=Fal
                 error += deltax
 
 
-def lines(points, thickness=1, endcap=None, viewport=None):
+def lines(points, thickness=1, endcap=None, viewport=None, _skipFirst=False):
     if thickness != 1 or endcap is not None or viewport is not None:
         raise NotImplementedError('The pybresenham module is under development. You can contribute at https://github.com/asweigart/pybresenham')
 
@@ -112,8 +126,11 @@ def lines(points, thickness=1, endcap=None, viewport=None):
     if len(points) < 2:
         raise PyBresenhamException('points argument must have at least two points')
 
-    return itertools.chain([(points[0][0], points[0][1])], # the first point in points
-                           itertools.chain.from_iterable([line(points[i][0], points[i][1], points[i+1][0], points[i+1][1], _skipFirst=True) for i in range(len(points) - 1)]))
+    if _skipFirst:
+        return itertools.chain.from_iterable([line(points[i][0], points[i][1], points[i+1][0], points[i+1][1], _skipFirst=True) for i in range(len(points) - 1)])
+    else:
+        return itertools.chain([(points[0][0], points[0][1])], # the first point in points
+                               itertools.chain.from_iterable([line(points[i][0], points[i][1], points[i+1][0], points[i+1][1], _skipFirst=True) for i in range(len(points) - 1)]))
 
 
 def polygon(points, filled=False, thickness=1, viewport=None):
@@ -122,11 +139,12 @@ def polygon(points, filled=False, thickness=1, viewport=None):
 
     try:
         points[2] # Make sure there are at least three points for this polygon.
+        points = list(points)
         points.append(points[0]) # Polygons are lines that connect back to their starting point.
     except:
         raise PyBresenhamException('points argument must have at least three points')
 
-    return lines(points, thickness, None, viewport)
+    return lines(points, thickness, None, viewport, _skipFirst=True)
 
 
 def triangle(x1, y1, x2, y2, x3, y3, filled=False, thickness=1, viewport=None):
