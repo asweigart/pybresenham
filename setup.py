@@ -1,4 +1,11 @@
 from setuptools import setup
+import os
+
+here = os.path.abspath(os.path.dirname(__file__))
+
+# Get the long description from the README file
+with open(os.path.join(here, 'README.rst'), encoding='utf-8') as f:
+    long_description = f.read()
 
 
 setup(
@@ -10,6 +17,7 @@ setup(
     description=('A cross-platform module for GUI automation for human beings. '
                  'Control the keyboard and mouse from a Python script.'),
     license='BSD',
+    long_description=long_description,
     packages=['pybresenham'],
     test_suite='tests',
     install_requires=[],
@@ -31,9 +39,9 @@ setup(
         'Programming Language :: Python :: 3.1',
         'Programming Language :: Python :: 3.2',
         'Programming Language :: Python :: 3.3',
-        'Programming Language :: Python :: 3.4'
-        'Programming Language :: Python :: 3.5'
-        'Programming Language :: Python :: 3.6'
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7'
     ],
 )

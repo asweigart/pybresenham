@@ -1,1 +1,4 @@
-v0.0.1, 20XX/XX/XX -- Initial release.
+v0.0.1, 2018/05/02 -- Initial release.
+v0.0.2, 2018/05/02 -- lol jk
+v0.0.3, 2018/05/02 -- still trying to figure out what the new version of pypi wants
+v0.0.4, 2018/05/02 -- Okay, this is the real initial release.
