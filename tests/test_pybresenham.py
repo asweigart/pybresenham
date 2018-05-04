@@ -72,6 +72,8 @@ def test_lines():
     with pytest.raises(pybresenham.PyBresenhamException):
         pybresenham.lines([(0, 0)]) # only 1 point
     with pytest.raises(pybresenham.PyBresenhamException):
+        pybresenham.lines([(0, 0), (10, 10), closed=True]) # only 2 points for a closed set of points
+    with pytest.raises(pybresenham.PyBresenhamException):
         pybresenham.lines([]) # zero points
     with pytest.raises(pybresenham.PyBresenhamException):
         pybresenham.lines([42]) # not iterable argument
@@ -301,7 +303,18 @@ def test_roundedBoxVertices():
         pybresenham.roundedBoxVertices(0,0,0,0,0)
 
 
+def test_translatePoints():
+    assert list(pybresenham.translatePoints([(0, 0), (10, 0), (0, 10), (10, 10)], 0, 0)) == [(0, 0), (10, 0), (0, 10), (10, 10)]
+    assert list(pybresenham.translatePoints([(0, 0), (10, 0), (0, 10), (10, 10)], 3, 0)) == [(3, 0), (13, 0), (3, 10), (13, 10)]
 
+    with pytest.raises(pybresenham.PyBresenhamException):
+        pybresenham.translatePoints('invalid points', 0, 0)
+    with pytest.raises(pybresenham.PyBresenhamException):
+        pybresenham.translatePoints([(0, 0), (10, 0), (0, 10), (10, 10)], 'invalid', 0)
+    with pytest.raises(pybresenham.PyBresenhamException):
+        pybresenham.translatePoints([(0, 0), (10, 0), (0, 10), (10, 10)], 0, 'invalid')
+    with pytest.raises(pybresenham.PyBresenhamException):
+        pybresenham.translatePoints([(0, 0), (10, 0), (0, 'invalid'), (10, 10)], 0, 0)
 
 
 if __name__ == '__main__':

@@ -62,12 +62,18 @@ def rotatePoints(points, rotationDegrees, pivotx=0, pivoty=0):
 
 
 def translatePoints(points, movex, movey):
+    _checkForIntOrFloat(movex)
+    _checkForIntOrFloat(movey)
     it = iter(points)
     try:
         x, y = next(it)
+        _checkForIntOrFloat(x)
+        _checkForIntOrFloat(y)
         yield x + movex, y + movey
     except StopIteration:
         pass # This `pass` is here on purpose. We don't use contextlib.suppress for backwards-compatibility reasons.
+    except:
+        raise PyBresenhamException('points argument must be an iterable of two numeric tuples for xy coordinates')
 
 
 def line(x1, y1, x2, y2, thickness=1, endcap=None, viewport=None, _skipFirst=False):
