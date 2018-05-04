@@ -99,6 +99,8 @@ def test_polygon():
     # TODO There are slight differences between Python 3.7 and Python 3.6 here:
     #assert list(pybresenham.polygon(10, 10, 9, 5, filled=False)) == [(9, 2), (8, 3), (7, 4), (6, 5), (5, 5), (4, 6), (3, 7), (2, 8), (2, 9), (3, 10), (3, 11), (3, 12), (4, 13), (4, 14), (4, 15), (5, 16), (5, 17), (6, 17), (7, 17), (8, 17), (9, 17), (10, 17), (11, 17), (12, 17), (13, 17), (14, 17), (15, 17), (15, 16), (16, 15), (16, 14), (16, 13), (17, 12), (17, 11), (17, 10), (18, 9), (18, 8), (17, 7), (16, 6), (15, 5), (14, 4), (13, 4), (12, 3), (11, 2), (10, 1)]
     #assert list(pybresenham.polygon(10, 10, 9, 5, filled=True))  == [(16, 6), (14, 17), (6, 9), (11, 11), (10, 17), (17, 7), (7, 12), (14, 4), (13, 4), (12, 12), (16, 9), (13, 17), (3, 7), (8, 5), (5, 8), (10, 8), (6, 7), (5, 5), (11, 5), (10, 7), (7, 6), (6, 10), (12, 6), (15, 11), (13, 7), (12, 17), (18, 9), (8, 15), (4, 10), (9, 14), (5, 11), (10, 13), (9, 3), (9, 16), (7, 5), (14, 15), (12, 11), (15, 14), (13, 10), (3, 12), (8, 12), (4, 15), (9, 9), (5, 14), (10, 14), (6, 13), (11, 15), (16, 13), (7, 8), (15, 16), (6, 16), (11, 16), (12, 8), (14, 8), (15, 13), (17, 8), (13, 13), (3, 11), (8, 9), (4, 12), (9, 4), (10, 3), (16, 7), (6, 14), (11, 10), (7, 15), (14, 5), (16, 10), (12, 13), (17, 11), (13, 16), (8, 6), (10, 9), (9, 7), (11, 4), (10, 4), (6, 11), (5, 17), (12, 7), (11, 9), (15, 10), (14, 6), (13, 6), (15, 7), (4, 11), (9, 13), (8, 3), (5, 10), (4, 6), (10, 10), (9, 2), (5, 7), (11, 3), (7, 4), (14, 12), (12, 4), (17, 12), (7, 17), (15, 9), (13, 9), (8, 13), (4, 8), (2, 8), (9, 8), (5, 13), (10, 15), (11, 14), (16, 14), (6, 17), (7, 11), (12, 9), (14, 9), (15, 12), (13, 12), (3, 10), (8, 10), (4, 13), (9, 11), (8, 16), (6, 15), (12, 3), (11, 13), (7, 14), (14, 10), (16, 11), (12, 14), (17, 10), (13, 15), (3, 9), (8, 7), (9, 6), (6, 5), (11, 7), (10, 5), (6, 8), (5, 16), (14, 16), (11, 8), (10, 16), (7, 13), (14, 7), (13, 5), (16, 8), (15, 6), (9, 12), (8, 4), (5, 9), (4, 7), (10, 11), (6, 6), (5, 6), (11, 2), (10, 6), (7, 7), (14, 13), (12, 5), (7, 16), (15, 8), (13, 8), (12, 16), (18, 8), (15, 5), (8, 14), (4, 9), (2, 9), (9, 15), (5, 12), (10, 12), (9, 17), (16, 15), (7, 10), (14, 14), (12, 10), (15, 15), (13, 11), (8, 11), (4, 14), (9, 10), (5, 15), (10, 1), (8, 17), (6, 12), (11, 12), (7, 9), (15, 17), (14, 11), (12, 15), (11, 17), (16, 12), (17, 9), (13, 14), (3, 8), (8, 8), (9, 5), (11, 6), (10, 2)]
+    #assert list(pybresenham.polygon(10,10,4,5,0,2)) == [(9, 7), (8, 7), (7, 7), (6, 8), (5, 8), (4, 9), (3, 9), (4, 10), (4, 11), (5, 12), (6, 13), (7, 13), (8, 13), (9, 13), (10, 13), (11, 13), (12, 13), (13, 13), (14, 13), (15, 12), (16, 11), (16, 10), (17, 9), (16, 8), (15, 8), (14, 8), (13, 7), (12, 7), (11, 6), (10, 6)]
+    #assert list(pybresenham.polygon(10,10,4,5,0,1,2)) == [(10, 3), (9, 4), (9, 5), (8, 6), (8, 7), (7, 8), (7, 9), (7, 10), (7, 11), (7, 12), (8, 13), (8, 14), (8, 15), (8, 16), (9, 16), (10, 16), (11, 16), (12, 16), (12, 15), (12, 14), (12, 13), (13, 12), (13, 11), (13, 10), (13, 9), (13, 8), (12, 7), (12, 6), (11, 5), (11, 4), (10, 3), (10, 2)]
 
     # Test invalid points arguments.
     with pytest.raises(pybresenham.PyBresenhamException):
@@ -109,6 +111,10 @@ def test_polygon():
         pybresenham.polygon(0, 0, 'invalid radius', 0)
     with pytest.raises(pybresenham.PyBresenhamException):
         pybresenham.polygon(0, 0, 10, 'invalid rotation')
+    with pytest.raises(pybresenham.PyBresenhamException):
+        pybresenham.polygon(0, 0, 10, 0, 'invalid stretchHorizontal')
+    with pytest.raises(pybresenham.PyBresenhamException):
+        pybresenham.polygon(0, 0, 10, 0, 1, 'invalid stretchVertical')
 
     # Test unimplemented parts.
     with pytest.raises(NotImplementedError):
@@ -140,6 +146,12 @@ def test_circle():
         list(pybresenham.circle(0,0,0,thickness =2))
     with pytest.raises(NotImplementedError):
         list(pybresenham.circle(0,0,0,viewport=1))
+
+
+def test_diamond():
+    assert list(pybresenham.diamond(0,0,3)) == [(4, 0), (3, 1), (5, 1), (2, 2), (6, 2), (1, 3), (7, 3), (2, 4), (6, 4), (3, 5), (5, 5), (4, 6)]
+    assert list(pybresenham.diamond(2,3,5)) == [(8, 3), (7, 4), (9, 4), (6, 5), (10, 5), (5, 6), (11, 6), (4, 7), (12, 7), (3, 8), (13, 8), (4, 9), (12, 9), (5, 10), (11, 10), (6, 11), (10, 11), (7, 12), (9, 12), (8, 13)]
+    assert list(pybresenham.diamond(0,0,3, True)) == [(4, 0), (3, 1), (4, 1), (5, 1), (2, 2), (3, 2), (4, 2), (5, 2), (6, 2), (1, 3), (2, 3), (3, 3), (4, 3), (5, 3), (6, 3), (7, 3), (2, 4), (3, 4), (4, 4), (5, 4), (6, 4), (3, 5), (4, 5), (5, 5), (4, 6)]
 
 
 def test_square():
@@ -267,26 +279,6 @@ def test_necker():
 def test_neckerVertices():
     with pytest.raises(NotImplementedError):
         pybresenham.neckerVertices(0,0,0,0,0)
-
-
-def test_chevron():
-    with pytest.raises(NotImplementedError):
-        pybresenham.chevron()
-
-
-def test_chevronVertices():
-    with pytest.raises(NotImplementedError):
-        pybresenham.chevronVertices()
-
-
-def test_diamond():
-    with pytest.raises(NotImplementedError):
-        pybresenham.diamond()
-
-
-def test_diamondVertices():
-    with pytest.raises(NotImplementedError):
-        pybresenham.diamondVertices()
 
 
 def test_bezier():

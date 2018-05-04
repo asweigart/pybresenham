@@ -1,3 +1,8 @@
+
+# NOTE: This module is under development and the API could rapidly change with no deprecation warning period.
+
+
+
 # NOTE: Many of these functions are just aliases for the polygon() function.
 # NOTE: As a design decision, these functions will always yield two-integer tuples (and not floats or other types).
 # NOTE: The *Vertices() functions return just the vertices. Drawing the complete shape usually involves just passing these vertices to the lines() function.
@@ -29,11 +34,21 @@ def _checkForIntOrFloat(arg):
 
 
 def rotatePoint(x, y, rotationDegrees, pivotx=0, pivoty=0):
-    it = rotatePoints([(x, y)], rotationDegrees, pivotx, pivoty)
-    return next(it)
+    rotationRadians = math.radians(rotationDegrees % 360)
+
+    x -= pivotx
+    y -= pivoty
+    x, y = x * math.cos(rotationRadians) - y * math.sin(rotationRadians), x * math.sin(rotationRadians) + y * math.cos(rotationRadians)
+    x += pivotx
+    y += pivoty
+
+    return int(x), int(y)
 
 
 def rotatePoints(points, rotationDegrees, pivotx=0, pivoty=0):
+    # Note: We are repeating the code in rotatePoint() instead of calling that
+    # function so we avoid the overhead of a function call in case len(points)
+    # is very large.
     rotationRadians = math.radians(rotationDegrees % 360)
 
     for x, y in points:
@@ -44,6 +59,16 @@ def rotatePoints(points, rotationDegrees, pivotx=0, pivoty=0):
         y += pivoty
 
         yield int(x), int(y)
+
+
+def translatePoints(points, movex, movey):
+    it = iter(points)
+    try:
+        x, y = next(it)
+        yield x + movex, y + movey
+    except StopIteration:
+        pass # This `pass` is here on purpose. We don't use contextlib.suppress for backwards-compatibility reasons.
+
 
 def line(x1, y1, x2, y2, thickness=1, endcap=None, viewport=None, _skipFirst=False):
     if (thickness != 1) or (endcap is not None) or (viewport is not None):
@@ -159,18 +184,16 @@ def lines(points, closed=False, thickness=1, endcap=None, viewport=None, _skipFi
                                itertools.chain.from_iterable([line(points[i][0], points[i][1], points[i+1][0], points[i+1][1], _skipFirst=True) for i in range(len(points) - 1)]))
 
 
-def polygon(x, y, radius, sides, rotation=0, filled=False, thickness=1, viewport=None):
+def polygon(x, y, radius, sides, rotation=0, stretchHorizontal=1.0, stretchVertical=1.0, filled=False, thickness=1, viewport=None):
     if thickness != 1 or viewport is not None:
         raise NotImplementedError('The pybresenham module is under development. You can contribute at https://github.com/asweigart/pybresenham')
-
-    # TODO - Add stretchx and stretchy parameters
 
     # Validate sides (x, y, radius, and rotation are validated in polygonVertices())
     _checkForIntOrFloat(sides)
     if sides < 3:
         raise PyBresenhamException('sides argument must be at least 3')
 
-    vertices = list(polygonVertices(x, y, radius, sides, rotation))
+    vertices = list(polygonVertices(x, y, radius, sides, rotation, stretchHorizontal, stretchVertical))
 
     if filled:
         # Run flood fill on the shape, starting from the center.
@@ -180,7 +203,7 @@ def polygon(x, y, radius, sides, rotation=0, filled=False, thickness=1, viewport
         return lines(vertices, closed=True, thickness=thickness, endcap=None, viewport=viewport)
 
 
-def polygonVertices(x, y, radius, sides, rotation=0):
+def polygonVertices(x, y, radius, sides, rotation=0, stretchHorizontal=1.0, stretchVertical=1.0):
     # TODO - validate x, y, radius, sides
 
     # Setting the start point like this guarantees a flat side will be on the "bottom" of the polygon.
@@ -189,14 +212,11 @@ def polygonVertices(x, y, radius, sides, rotation=0):
     else:
         angleOfStartPointDegrees = 90 + rotation - (180 / sides)
 
-    #angleOfStartPointRadians = math.radians(angleOfStartPointDegrees)
-
-    # yield the first point
-    #yield (int(math.cos(angleOfStartPointRadians) * radius) + x, -(int(math.sin(angleOfStartPointRadians) * radius) + y))
-
     for sideNum in range(sides):
         angleOfPointRadians = math.radians(angleOfStartPointDegrees + (360 / sides * sideNum))
-        yield (int(math.cos(angleOfPointRadians) * radius) + x, -(int(math.sin(angleOfPointRadians) * radius)) + y)
+
+        yield (  int(math.cos(angleOfPointRadians) * radius  * stretchHorizontal) + x,
+               -(int(math.sin(angleOfPointRadians) * radius) * stretchVertical)   + y)
 
 
 def floodFill(points, startx, starty):
@@ -339,6 +359,44 @@ def rectangle(left, top, width, height, filled=False, thickness=1, viewport=None
             yield (x, y)
 
 
+def diamond(x, y, radius, filled=False, thickness=1, viewport=None):
+
+    """
+    ...D
+    ..D'D    In this example diamond shape, the D characters represent the
+    .D'''D   drawn diamond, the . characters represent the "outside spaces",
+    D'''''D  and the ' characters represent the "inside spaces".
+    .D'''D   (The radius of this example diamond is 3)
+    ..D'D
+    ...D
+    """
+    outsideSpaces = radius
+    insideSpaces = 1 # We'll only start incrementing insidesSpaces on the 2nd row.
+
+    for row in range(radius * 2 + 1):
+        # Yield the leftside point in this row.
+        yield (outsideSpaces + 1 + x, row + y)
+
+        if row != 0 and row != radius * 2:
+            # (The first and last rows only have one point per row.)
+
+            if filled:
+                # Yield all the interior spaces in this row.
+                for interiorx in range(outsideSpaces + 2 + x, outsideSpaces + insideSpaces + 2 + x):
+                    yield (interiorx, row + y) # No need for "+ x" here, we did that in the range() call.
+
+            # Yield the rightside point in this row.
+            yield (outsideSpaces + insideSpaces + 2 + x, row + y)
+
+        # Modify outsideSpaces/insideSpaces as we move down the rows.
+        if row < radius:
+            outsideSpaces -= 1
+            if row != 0:
+                insideSpaces += 2
+        else:
+            outsideSpaces += 1
+            insideSpaces -= 2
+
 
 def ellipse(rotation=0, filled=False, thickness=1): # TODO rect-based paramters or center xy parameters?
     raise NotImplementedError('The pybresenham module is under development. You can contribute at https://github.com/asweigart/pybresenham')
@@ -393,22 +451,6 @@ def necker(left, top, width, height, depth, wireframe=True, rotation=0, filled=F
 
 
 def neckerVertices(left, top, width, height, depth, wireframe=True):
-    raise NotImplementedError('The pybresenham module is under development. You can contribute at https://github.com/asweigart/pybresenham')
-
-
-def chevron():
-    raise NotImplementedError('The pybresenham module is under development. You can contribute at https://github.com/asweigart/pybresenham')
-
-
-def chevronVertices():
-    raise NotImplementedError('The pybresenham module is under development. You can contribute at https://github.com/asweigart/pybresenham')
-
-
-def diamond():
-    raise NotImplementedError('The pybresenham module is under development. You can contribute at https://github.com/asweigart/pybresenham')
-
-
-def diamondVertices():
     raise NotImplementedError('The pybresenham module is under development. You can contribute at https://github.com/asweigart/pybresenham')
 
 
