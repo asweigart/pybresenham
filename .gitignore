@@ -3,3 +3,4 @@ _build
 *.pyc
 __pycache__
 PyBresenham.egg-info
+htmlconv
