@@ -160,19 +160,29 @@ def lines(points, closed=False, thickness=1, endcap=None, viewport=None, _skipFi
 
 
 def polygon(x, y, radius, sides, rotation=0, filled=False, thickness=1, viewport=None):
-    # TODO change this. "polygon" should be for regular polygons. The current implementation is really for "closed lines()"
-    if filled or thickness != 1 or viewport is not None:
+    if thickness != 1 or viewport is not None:
         raise NotImplementedError('The pybresenham module is under development. You can contribute at https://github.com/asweigart/pybresenham')
 
+    # TODO - Add stretchx and stretchy parameters
+
+    # Validate sides (x, y, radius, and rotation are validated in polygonVertices())
     _checkForIntOrFloat(sides)
     if sides < 3:
         raise PyBresenhamException('sides argument must be at least 3')
 
     vertices = list(polygonVertices(x, y, radius, sides, rotation))
-    return lines(vertices, closed=True, thickness=thickness, endcap=None, viewport=viewport)
+
+    if filled:
+        # Run flood fill on the shape, starting from the center.
+        borderPoints = list(lines(vertices, closed=True, thickness=thickness, endcap=None, viewport=viewport))
+        return iter(floodFill(borderPoints, x, y))
+    else:
+        return lines(vertices, closed=True, thickness=thickness, endcap=None, viewport=viewport)
 
 
 def polygonVertices(x, y, radius, sides, rotation=0):
+    # TODO - validate x, y, radius, sides
+
     # Setting the start point like this guarantees a flat side will be on the "bottom" of the polygon.
     if sides % 2 == 1:
         angleOfStartPointDegrees = 90 + rotation
@@ -187,6 +197,53 @@ def polygonVertices(x, y, radius, sides, rotation=0):
     for sideNum in range(sides):
         angleOfPointRadians = math.radians(angleOfStartPointDegrees + (360 / sides * sideNum))
         yield (int(math.cos(angleOfPointRadians) * radius) + x, -(int(math.sin(angleOfPointRadians) * radius)) + y)
+
+
+def floodFill(points, startx, starty):
+
+    # Note: We're not going to use recursion here because 1) recursion is
+    # overrated 2) on a large enough shape it would cause a stackoverflow
+    # 3) flood fill doesn't strictly need recursion because it doesn't require
+    # a stack and 4) recursion is overrated.
+
+    # Find the min/max x/y values to get the "boundaries" of this shape, to
+    # prevent an infinite loop.
+    minx, miny = points[0]
+    maxx, maxy = points[0]
+    for bpx, bpy in points:
+        if bpx < minx:
+            minx = bpx
+        if bpx > maxx:
+            maxx = bpx
+        if bpy < miny:
+            miny = bpy
+        if bpy > maxy:
+            maxy = bpy
+
+    allPoints = set(points) # Use a set because the look ups will be faster.
+    del points # This might help memory usage, though most likely the caller still has a reference to it.
+    pointsToProcess = [(startx, starty)]
+    while pointsToProcess:
+        x, y = pointsToProcess.pop()
+
+        # Process point to right left of x, y.
+        if x + 1 < maxx and (x + 1, y) not in allPoints:
+            pointsToProcess.append((x + 1, y))
+            allPoints.add((x + 1, y))
+        # Process point to the left of x, y.
+        if x - 1 > minx and (x - 1, y) not in allPoints:
+            pointsToProcess.append((x - 1, y))
+            allPoints.add((x - 1, y))
+        # Process point below x, y.
+        if y + 1 < maxy and (x, y + 1) not in allPoints:
+            pointsToProcess.append((x, y + 1))
+            allPoints.add((x, y + 1))
+        # Process point above x, y.
+        if y - 1 > miny and (x, y - 1) not in allPoints:
+            pointsToProcess.append((x, y - 1))
+            allPoints.add((x, y - 1))
+    return allPoints
+
 
 
 def circle(x, y, radius, filled=False, thickness=1, viewport=None):
