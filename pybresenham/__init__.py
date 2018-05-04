@@ -1,6 +1,8 @@
 
 # NOTE: This module is under development and the API could rapidly change with no deprecation warning period.
 
+# TODO - circle() has a problem where it doesn't send off the point for the leftmost side.
+
 
 
 # NOTE: Many of these functions are just aliases for the polygon() function.
@@ -13,12 +15,14 @@
 
 __version__ = '0.0.4'
 
+import doctest
 import itertools
 import math
 
 
 # Constants for end cap styles.
 ROUNDED_CAP = 1
+SQUARE_CAP = 2
 
 class Rect(object):
     pass # TODO similar to pygame's Rect class
@@ -62,14 +66,17 @@ def rotatePoints(points, rotationDegrees, pivotx=0, pivoty=0):
 
 
 def translatePoints(points, movex, movey):
+
+    # Note: There is no translatePoint() function because that's trivial.
     _checkForIntOrFloat(movex)
     _checkForIntOrFloat(movey)
     it = iter(points)
     try:
-        x, y = next(it)
-        _checkForIntOrFloat(x)
-        _checkForIntOrFloat(y)
-        yield x + movex, y + movey
+        while True:
+            x, y = next(it)
+            _checkForIntOrFloat(x)
+            _checkForIntOrFloat(y)
+            yield x + movex, y + movey
     except StopIteration:
         pass # This `pass` is here on purpose. We don't use contextlib.suppress for backwards-compatibility reasons.
     except:
@@ -429,11 +436,91 @@ def starVertices(x, y, radius, points=5):
 
 
 def grid(gridLeft, gridTop, numBoxesWide, numBoxesHigh, boxWidth, boxHeight, thickness=1, viewport=None):
-    raise NotImplementedError('The pybresenham module is under development. You can contribute at https://github.com/asweigart/pybresenham')
+    if viewport is not None:
+        raise NotImplementedError('The pybresenham module is under development. You can contribute at https://github.com/asweigart/pybresenham')
+
+    # Validate arguments.
+    _checkForIntOrFloat(gridLeft)
+    _checkForIntOrFloat(gridTop)
+    _checkForIntOrFloat(numBoxesWide)
+    _checkForIntOrFloat(numBoxesHigh)
+    _checkForIntOrFloat(boxWidth)
+    _checkForIntOrFloat(boxHeight)
+    _checkForIntOrFloat(thickness)
+
+    numBoxesWide = int(numBoxesWide)
+    numBoxesHigh = int(numBoxesHigh)
+    boxWidth = int(boxWidth)
+    boxHeight = int(boxHeight)
+    thickness = int(thickness)
+
+    if numBoxesWide < 1:
+        raise PyBresenhamException('numBoxesWide must be 1 or greater')
+    if numBoxesHigh < 1:
+        raise PyBresenhamException('numBoxesHigh must be 1 or greater')
+    if boxWidth < 1:
+        raise PyBresenhamException('boxWidth must be 1 or greater')
+    if boxHeight < 1:
+        raise PyBresenhamException('boxHeight must be 1 or greater')
+    if thickness < 1:
+        raise PyBresenhamException('thickness must be 1 or greater')
 
 
-def gridVertices(gridLeft, gridTop, numBoxesWide, numBoxesHigh, boxWidth, boxHeight):
-    raise NotImplementedError('The pybresenham module is under development. You can contribute at https://github.com/asweigart/pybresenham')
+    # Record the y coordinates so we don't repeat the points at the intersections
+    # of the grid.
+    intersectiony = set()
+
+    """Generate the points for the horizontal lines of the grid.
+    i.e. the - characters in this diagram:
+    ----------
+    |  |  |  |
+    |  |  |  |
+    ----------
+    |  |  |  |
+    |  |  |  |
+    ----------
+    |  |  |  |
+    |  |  |  |
+    ----------"""
+    for gridRow in range(numBoxesHigh + 1):
+        for thicknessIndex in range(thickness): # thicknessIndex isn't a great name, but each "grid row" can be multiple points tall if thickness > 1
+            y = (boxHeight * gridRow) + (thickness * gridRow) + thicknessIndex
+            intersectiony.add(y)
+            for x in range(numBoxesWide * boxWidth + (thickness * (numBoxesWide + 1))):
+                yield (x + gridLeft, y + gridTop)
+
+    """Generate the points for the vertical lines in between the horizontal lines of the grid.
+    i.e. the | characters in this diagram:
+    ----------
+    |  |  |  |
+    |  |  |  |
+    ----------
+    |  |  |  |
+    |  |  |  |
+    ----------
+    |  |  |  |
+    |  |  |  |
+    ----------"""
+    for gridColumn in range(numBoxesWide + 1):
+        for thicknessIndex in range(thickness): # thicknessIndex isn't a great name, but each "grid row" can be multiple points tall if thickness > 1
+            x = (boxWidth * gridColumn) + (thickness * gridColumn) + thicknessIndex
+            for y in range(numBoxesHigh * boxHeight + (thickness * (numBoxesHigh + 1))):
+
+                # Additionally, we don't want to yield xy points we've yielded before.
+                """ i.e. These would be the points at the intersections of the grid,
+                at the + characters in this diagram:
+                    +--+--+--+
+                    |  |  |  |
+                    |  |  |  |
+                    +--+--+--+
+                    |  |  |  |
+                    |  |  |  |
+                    +--+--+--+
+                    |  |  |  |
+                    |  |  |  |
+                    +--+--+--+"""
+                if y not in intersectiony:
+                    yield (x + gridLeft, y + gridTop)
 
 
 def gridInterior(gridLeft, gridTop, numBoxesWide, numBoxesHigh, boxWidth, boxHeight, thickness=1, viewport=None):
@@ -475,3 +562,35 @@ def roundedBox(left, top, width, height, radius, rotation=0, filled=False, thick
 def roundedBoxVertices(left, top, width, height, radius):
     raise NotImplementedError('The pybresenham module is under development. You can contribute at https://github.com/asweigart/pybresenham')
 
+
+def _drawPoints(points):
+    """A small debug function that takes an iterable of (x, y) integer tuples
+    and draws them to the screen."""
+    import sys
+    points = list(points)
+    try:
+        points = [(int(x), int(y)) for x, y in points]
+    except:
+        raise PyBresenhamException('points must only contains (x, y) numeric tuples')
+
+    # Calculate size of the character grid from the given points.
+    minx = min([x for x, y in points])
+    maxx = max([x for x, y in points])
+    miny = min([y for x, y in points])
+    maxy = max([y for x, y in points])
+
+    charGrid = [[' '] * (maxy - miny + 1) for i in range(maxx - minx + 1)]
+
+    # Draw O characters to the grid at the given points.
+    for x, y in points:
+        charGrid[x - minx][y - miny] = 'O'
+
+    # Print out the character grid.
+    for y in range(len(charGrid[0])):
+        for x in range(len(charGrid)):
+            sys.stdout.write(charGrid[x][y])
+        print()
+
+
+if __name__ == '__main__':
+    doctest.testmod()
