@@ -14,14 +14,13 @@ setup(
     url='https://github.com/asweigart/pybresenham',
     author='Al Sweigart',
     author_email='al@inventwithpython.com',
-    description=('A cross-platform module for GUI automation for human beings. '
-                 'Control the keyboard and mouse from a Python script.'),
+    description=('A Python module of generators that generate x, y coordinates for various vector shapes such as lines, rectangles, etc. Named after Bresenham of line-algorithm fame.'),
     license='BSD',
     long_description=long_description,
     packages=['pybresenham'],
     test_suite='tests',
     install_requires=[],
-    keywords="bresenham line circle drawing 2D geometry shapes vector bitmap rotate rotation",
+    keywords="bresenham line circle drawing 2D geometry shapes vector bitmap rotate rotation vector2bitmap",
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Win32 (MS Windows)',
