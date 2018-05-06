@@ -7,7 +7,10 @@
 
 # NOTE: Many of these functions are just aliases for the polygon() function.
 # NOTE: As a design decision, these functions will always yield two-integer tuples (and not floats or other types).
-# NOTE: The *Vertices() functions return just the vertices. Drawing the complete shape usually involves just passing these vertices to the lines() function.
+# NOTE: The *Segments() functions return just the line segments. Drawing the complete shape usually involves just passing these segments to the segments() function.
+# NOTE: The *Vertices() functions return just the line vertices. Drawing the complete shape usually involves just passing these vertices to the lines() function.
+
+# NOTE: The *Vertices() functions return a list of (x, y) coordinates that form a single, snakey line, while *Segments functions return a list of (x1, y1, x2, y2) line segments, which don't necessarily connect with each other.
 
 # TODO - if we implement the "fill=True" feature for these shapes, doesn't it become necessary to allocate the border's points all at once instead
 # of yielding them one at a time? Otherwise we won't have enough info for the flood fill algorithm. Though I suppose we could just save the border
@@ -24,17 +27,18 @@ import math
 ROUNDED_CAP = 1
 SQUARE_CAP = 2
 
-class Rect(object):
-    pass # TODO similar to pygame's Rect class
-
 
 class PyBresenhamException(Exception):
     pass
 
 
-def _checkForIntOrFloat(arg):
+def _checkForIntOrFloat(arg, minVal=None, maxVal=None):
     if not isinstance(arg, (int, float)):
         raise PyBresenhamException('argument must be int or float, not %s' % (arg.__class__.__name__))
+    if minVal is not None and arg < minVal:
+        raise PyBresenhamException('argument must be at least %s or greater' % (minVal))
+    if maxVal is not None and arg > maxVal:
+        raise PyBresenhamException('argument must be at most %s or less' % (maxVal))
 
 
 def rotatePoint(x, y, rotationDegrees, pivotx=0, pivoty=0):
@@ -195,6 +199,30 @@ def lines(points, closed=False, thickness=1, endcap=None, viewport=None, _skipFi
     else:
         return itertools.chain([(points[0][0], points[0][1])], # the first point in points
                                itertools.chain.from_iterable([line(points[i][0], points[i][1], points[i+1][0], points[i+1][1], _skipFirst=True) for i in range(len(points) - 1)]))
+
+
+def segments(segments, thickness=1, endcap=None, viewport=None):
+    if thickness != 1 or endcap is not None or viewport is not None:
+        raise NotImplementedError('The pybresenham module is under development. You can contribute at https://github.com/asweigart/pybresenham')
+
+    # Validate segments argument
+    try:
+        iter(segments)
+    except TypeError:
+        raise PyBresenhamException('segments must be an iterable')
+
+    # Check that all the xy coordinates are either ints or floats.
+    for i, segment in enumerate(segments):
+        try:
+            _checkForIntOrFloat(segment[0])
+            _checkForIntOrFloat(segment[1])
+            _checkForIntOrFloat(segment[2])
+            _checkForIntOrFloat(segment[3])
+        except:
+            raise PyBresenhamException('segment at index %s is not a tuple of four int/float values' % (i))
+
+    return itertools.chain.from_iterable([line(segments[i][0], segments[i][1], segments[i][2], segments[i][3]) for i in range(len(segments))])
+
 
 
 def polygon(x, y, radius, sides, rotation=0, stretchHorizontal=1.0, stretchVertical=1.0, filled=False, thickness=1, viewport=None):
@@ -541,9 +569,18 @@ def hexGridInterior():
 
 def necker(left, top, width, height, depth, wireframe=True, rotation=0, filled=False, thickness=1, viewport=None):
     raise NotImplementedError('The pybresenham module is under development. You can contribute at https://github.com/asweigart/pybresenham')
+    """
+    The axii look like:        Positive width looks like:
+
+    height
+    |
+    |  /depth
+    | /
+    |/_____width
+    """
 
 
-def neckerVertices(left, top, width, height, depth, wireframe=True):
+def neckerSegments(left, top, width, height, depth, wireframe=True):
     raise NotImplementedError('The pybresenham module is under development. You can contribute at https://github.com/asweigart/pybresenham')
 
 
@@ -551,7 +588,7 @@ def bezier():
     raise NotImplementedError('The pybresenham module is under development. You can contribute at https://github.com/asweigart/pybresenham')
 
 
-def bezierVertices():
+def bezierSegments():
     raise NotImplementedError('The pybresenham module is under development. You can contribute at https://github.com/asweigart/pybresenham')
 
 
@@ -559,7 +596,7 @@ def roundedBox(left, top, width, height, radius, rotation=0, filled=False, thick
     raise NotImplementedError('The pybresenham module is under development. You can contribute at https://github.com/asweigart/pybresenham')
 
 
-def roundedBoxVertices(left, top, width, height, radius):
+def roundedBoxSegments(left, top, width, height, radius):
     raise NotImplementedError('The pybresenham module is under development. You can contribute at https://github.com/asweigart/pybresenham')
 
 
