@@ -10,7 +10,8 @@ Welcome to PyBresenham's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-
+   pybresenham.rst
+   modules.rst
 
 Indices and tables
 ==================
