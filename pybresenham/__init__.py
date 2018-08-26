@@ -417,6 +417,7 @@ def polygonVertices(x, y, radius, sides, rotationDegrees=0, stretchHorizontal=1.
 
 
          O
+
     """
 
     # TODO - validate x, y, radius, sides
