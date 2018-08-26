@@ -29,6 +29,11 @@ SQUARE_CAP = 2
 
 
 class PyBresenhamException(Exception):
+    """
+    This class exists to be raised for any expected exceptional cases in PyBresenham.
+    If the PyBresenham module raises any other exception, you can assume this is
+    caused by a bug in PyBresenham.
+    """
     pass
 
 
@@ -42,24 +47,49 @@ def _checkForIntOrFloat(arg, minVal=None, maxVal=None):
 
 
 def rotatePoint(x, y, rotationDegrees, pivotx=0, pivoty=0):
-    rotationRadians = math.radians(rotationDegrees % 360)
+    """
+    Rotates the point at `x` and `y` by `rotationDegrees`. The point is rotated
+    around the origin by default, but can be rotated around another pivot point
+    by specifying `pivotx` and `pivoty`.
 
-    x -= pivotx
-    y -= pivoty
-    x, y = x * math.cos(rotationRadians) - y * math.sin(rotationRadians), x * math.sin(rotationRadians) + y * math.cos(rotationRadians)
-    x += pivotx
-    y += pivoty
+    The points are rotated counterclockwise.
 
-    return int(x), int(y)
+    Returns an x and y tuple.
+
+    Since the final result will be integers, there is a large amount of
+    rounding error that can take place.
+
+    >>> rotatePoint(10, 0, 90)
+    (0, 10)
+    >>> rotatePoint(10, 0, 180)
+    (-10, 0)
+    >>> rotatePoint(10, 0, 45)
+    (7, 7)
+    """
+
+    # Reuse the code in rotatePoints()
+    return list(rotatePoints([(x, y)], rotationDegrees, pivotx, pivoty))[0]
 
 
 def rotatePoints(points, rotationDegrees, pivotx=0, pivoty=0):
-    # Note: We are repeating the code in rotatePoint() instead of calling that
-    # function so we avoid the overhead of a function call in case len(points)
-    # is very large.
+    """
+    Rotates each x and y tuple in `points`` by `rotationDegrees`. The points
+    are rotated around the origin by default, but can be rotated around another
+    pivot point by specifying `pivotx` and `pivoty`.
+
+    The points are rotated counterclockwise.
+
+    Returns a generator that produces an x and y tuple for each point in `points`.
+
+    >>> list(rotatePoints([(10, 0), (7, 7)], 45))
+    [(7, 7), (0, 9)]
+    """
+
     rotationRadians = math.radians(rotationDegrees % 360)
 
     for x, y in points:
+        _checkForIntOrFloat(x)
+        _checkForIntOrFloat(y)
         x -= pivotx
         y -= pivoty
         x, y = x * math.cos(rotationRadians) - y * math.sin(rotationRadians), x * math.sin(rotationRadians) + y * math.cos(rotationRadians)
@@ -70,26 +100,43 @@ def rotatePoints(points, rotationDegrees, pivotx=0, pivoty=0):
 
 
 def translatePoints(points, movex, movey):
+    """
+    Returns a generator that produces all of the (x, y) tuples in `points` moved over by `movex` and `movey`.
+
+    >>> points = [(0, 0), (5, 10), (25, 25)]
+    >>> list(translatePoints(points, 1, -3))
+    [(1, -3), (6, 7), (26, 22)]
+    """
 
     # Note: There is no translatePoint() function because that's trivial.
     _checkForIntOrFloat(movex)
     _checkForIntOrFloat(movey)
-    it = iter(points)
     try:
-        while True:
-            x, y = next(it)
+        for x, y in points:
             _checkForIntOrFloat(x)
             _checkForIntOrFloat(y)
             yield x + movex, y + movey
-    except StopIteration:
-        pass # This `pass` is here on purpose. We don't use contextlib.suppress for backwards-compatibility reasons.
     except:
-        raise PyBresenhamException('points argument must be an iterable of two numeric tuples for xy coordinates')
+        raise PyBresenhamException('`points` argument must be an iterable of (x, y) points.')
 
 
-def line(x1, y1, x2, y2, thickness=1, endcap=None, viewport=None, _skipFirst=False):
-    if (thickness != 1) or (endcap is not None) or (viewport is not None):
-        raise NotImplementedError('The pybresenham module is under development. You can contribute at https://github.com/asweigart/pybresenham')
+def line(x1, y1, x2, y2, thickness=1, endcap=None, _skipFirst=False):
+    """
+    Returns a generator that produces all of the points in a line between `x1`, `y1` and `x2`, `y2`.
+
+    (Note: The `thickness` and `endcap` parameters are not yet implemented.)
+
+    >>> list(line(0, 0, 10, 3))
+    [(0, 0), (1, 0), (2, 1), (3, 1), (4, 1), (5, 1), (6, 2), (7, 2), (8, 2), (9, 3), (10, 3)]
+    >>> drawPoints(line(0, 0, 20, 3))
+    OOOO
+        OOOOOOO
+               OOOOOO
+                     OOOO
+    """
+
+    if (thickness != 1) or (endcap is not None):
+        raise NotImplementedError('The pybresenham module is under development and the filled and thickness parameters are not implemented. You can contribute at https://github.com/asweigart/pybresenham')
 
     _checkForIntOrFloat(x1)
     _checkForIntOrFloat(y1)
@@ -153,9 +200,27 @@ def line(x1, y1, x2, y2, thickness=1, endcap=None, viewport=None, _skipFirst=Fal
                 error += deltax
 
 
-def lines(points, closed=False, thickness=1, endcap=None, viewport=None, _skipFirst=False):
-    if thickness != 1 or endcap is not None or viewport is not None:
-        raise NotImplementedError('The pybresenham module is under development. You can contribute at https://github.com/asweigart/pybresenham')
+def lines(points, closed=False, thickness=1, endcap=None, _skipFirst=False):
+    """
+    Returns a generator that produces all of the points in the lines connecting the (x, y) tuples in `points`.
+
+    If `closed` is `True`, then the last point will connect to the first point.
+
+    (Note: The `thickness` and `endcap` parameters are not yet implemented.)
+
+    >>> list(lines([(0, 0), (10, 3), (5, 5)]))
+    [(0, 0), (1, 0), (2, 1), (3, 1), (4, 1), (5, 1), (6, 2), (7, 2), (8, 2), (9, 3), (10, 3), (9, 4), (8, 4), (7, 4), (6, 5), (5, 5)]
+    >>> drawPoints(lines([(0, 0), (10, 3), (5, 5)]))
+    OO
+      OOOO
+          OOO
+             OO
+           OOO
+         OO
+    """
+
+    if thickness != 1 or endcap is not None:
+        raise NotImplementedError('The pybresenham module is under development and the filled, thickness, and endcap parameters are not implemented. You can contribute at https://github.com/asweigart/pybresenham')
 
     # Validate points argument
     try:
@@ -201,9 +266,11 @@ def lines(points, closed=False, thickness=1, endcap=None, viewport=None, _skipFi
                                itertools.chain.from_iterable([line(points[i][0], points[i][1], points[i+1][0], points[i+1][1], _skipFirst=True) for i in range(len(points) - 1)]))
 
 
-def segments(segments, thickness=1, endcap=None, viewport=None):
-    if thickness != 1 or endcap is not None or viewport is not None:
-        raise NotImplementedError('The pybresenham module is under development. You can contribute at https://github.com/asweigart/pybresenham')
+'''
+# TODO - Do we really need this function? Why can't the user just call line() multiple times?
+def segments(segments, thickness=1, endcap=None):
+    if thickness != 1 or endcap is not None:
+        raise NotImplementedError('The pybresenham module is under development and the filled, thickness, and endcap parameters are not implemented. You can contribute at https://github.com/asweigart/pybresenham')
 
     # Validate segments argument
     try:
@@ -222,36 +289,143 @@ def segments(segments, thickness=1, endcap=None, viewport=None):
             raise PyBresenhamException('segment at index %s is not a tuple of four int/float values' % (i))
 
     return itertools.chain.from_iterable([line(segments[i][0], segments[i][1], segments[i][2], segments[i][3]) for i in range(len(segments))])
+'''
 
 
+def polygon(x, y, radius, sides, rotationDegrees=0, stretchHorizontal=1.0, stretchVertical=1.0, filled=False, thickness=1):
+    """
+    Returns a generator that produces the (x, y) points of a regular polygon.
+    `x` and `y` mark the center of the polygon, `radius` indicates the size,
+    `sides` specifies what kind of polygon it is.
 
-def polygon(x, y, radius, sides, rotation=0, stretchHorizontal=1.0, stretchVertical=1.0, filled=False, thickness=1, viewport=None):
-    if thickness != 1 or viewport is not None:
-        raise NotImplementedError('The pybresenham module is under development. You can contribute at https://github.com/asweigart/pybresenham')
+    Odd-sided polygons have a pointed corner at the top and flat horizontal
+    side at the bottom. The `rotationDegrees` argument will rotate the polygon
+    counterclockwise.
 
-    # Validate sides (x, y, radius, and rotation are validated in polygonVertices())
+    The polygon can be stretched by passing `stretchHorizontal` or `stretchVertical`
+    arguments. Passing `2.0` for `stretchHorizontal`, for example, will double with
+    width of the polygon.
+
+    If `filled` is set to `True`, the generator will also produce the interior
+    (x, y) points.
+
+    (Note: The `thickness` parameter is not yet implemented.)
+
+    >>> list(polygon(10, 10, 8, 5))
+    [(9, 3), (8, 4), (7, 5), (6, 6), (5, 6), (4, 7), (3, 8), (3, 9), (4, 10), (4, 11), (4, 12), (5, 13), (5, 14), (6, 15), (6, 16), (7, 16), (8, 16), (9, 16), (10, 16), (11, 16), (12, 16), (13, 16), (14, 16), (14, 15), (15, 14), (15, 13), (16, 12), (16, 11), (16, 10), (17, 9), (17, 8), (16, 7), (15, 6), (14, 5), (13, 4), (12, 4), (11, 3), (10, 2)]
+    >>> drawPoints(polygon(10, 10, 8, 5))
+           O
+          O O
+         O   OO
+        O      O
+      OO        O
+     O           O
+    O             O
+    O             O
+     O           O
+     O           O
+     O           O
+      O         O
+      O         O
+       O       O
+       OOOOOOOOO
+    >>> drawPoints(polygon(10, 10, 8, 5, rotationDegrees=20))
+         OO
+        O  OOO
+        O     OO
+       O        OO
+      O          O
+     O           O
+     O           O
+    O            O
+     O           O
+     O           O
+      O          O
+       O        OO
+        O     OO
+        O  OOO
+         OO
+    """
+    if thickness != 1:
+        raise NotImplementedError('The pybresenham module is under development and the filled, thickness, and endcap parameters are not implemented. You can contribute at https://github.com/asweigart/pybresenham')
+
+    # Validate sides (x, y, radius, and rotationDegrees are validated in polygonVertices())
     _checkForIntOrFloat(sides)
     if sides < 3:
         raise PyBresenhamException('sides argument must be at least 3')
 
-    vertices = list(polygonVertices(x, y, radius, sides, rotation, stretchHorizontal, stretchVertical))
+    vertices = list(polygonVertices(x, y, radius, sides, rotationDegrees, stretchHorizontal, stretchVertical))
 
     if filled:
         # Run flood fill on the shape, starting from the center.
-        borderPoints = list(lines(vertices, closed=True, thickness=thickness, endcap=None, viewport=viewport))
+        borderPoints = list(lines(vertices, closed=True, thickness=thickness, endcap=None))
         return iter(floodFill(borderPoints, x, y))
     else:
-        return lines(vertices, closed=True, thickness=thickness, endcap=None, viewport=viewport)
+        return lines(vertices, closed=True, thickness=thickness, endcap=None)
 
 
-def polygonVertices(x, y, radius, sides, rotation=0, stretchHorizontal=1.0, stretchVertical=1.0):
+def polygonVertices(x, y, radius, sides, rotationDegrees=0, stretchHorizontal=1.0, stretchVertical=1.0):
+    """
+    Returns a generator that produces the (x, y) points of the vertices of a regular polygon.
+    `x` and `y` mark the center of the polygon, `radius` indicates the size,
+    `sides` specifies what kind of polygon it is.
+
+    Odd-sided polygons have a pointed corner at the top and flat horizontal
+    side at the bottom. The `rotationDegrees` argument will rotate the polygon
+    counterclockwise.
+
+    The polygon can be stretched by passing `stretchHorizontal` or `stretchVertical`
+    arguments. Passing `2.0` for `stretchHorizontal`, for example, will double with
+    width of the polygon.
+
+    If `filled` is set to `True`, the generator will also produce the interior
+    (x, y) points.
+
+    (Note: The `thickness` parameter is not yet implemented.)
+
+    >>> list(polygonVertices(10, 10, 8, 5))
+    [(10, 2.0), (3, 8.0), (6, 16.0), (14, 16.0), (17, 8.0)]
+    >>> drawPoints(polygonVertices(10, 10, 8, 5))
+           O
+
+
+
+
+
+    O             O
+
+
+
+
+
+
+
+       O       O
+    >>> drawPoints(polygonVertices(10, 10, 8, 5, rotationDegrees=20))
+         O
+
+
+                 O
+
+
+
+    O
+
+
+
+                 O
+
+
+         O
+    """
+
     # TODO - validate x, y, radius, sides
 
     # Setting the start point like this guarantees a flat side will be on the "bottom" of the polygon.
     if sides % 2 == 1:
-        angleOfStartPointDegrees = 90 + rotation
+        angleOfStartPointDegrees = 90 + rotationDegrees
     else:
-        angleOfStartPointDegrees = 90 + rotation - (180 / sides)
+        angleOfStartPointDegrees = 90 + rotationDegrees - (180 / sides)
 
     for sideNum in range(sides):
         angleOfPointRadians = math.radians(angleOfStartPointDegrees + (360 / sides * sideNum))
@@ -261,17 +435,53 @@ def polygonVertices(x, y, radius, sides, rotation=0, stretchHorizontal=1.0, stre
 
 
 def floodFill(points, startx, starty):
+    """
+    Returns a set of the (x, y) points of a filled in area.
+
+    `points` is an iterable of (x, y) tuples of an arbitrary shape.
+
+    `startx` and `starty` mark the starting point (likely inside the
+    arbitrary shape) to begin filling from.
+
+    >>> drawPoints(polygon(5, 5, 4, 5))
+       O
+      O O
+     O   O
+    O     O
+    O     O
+    O     O
+     O   O
+     OOOOO
+    >>> pentagonOutline = list(polygon(5, 5, 4, 5))
+    >>> floodFill(pentagonOutline, 5, 5)
+    {(7, 3), (4, 7), (4, 8), (5, 6), (6, 6), (7, 7), (6, 2), (5, 1), (3, 7), (2, 5), (8, 5), (5, 8), (6, 7), (3, 3), (5, 5), (7, 6), (4, 4), (6, 3), (3, 6), (3, 4), (8, 6), (6, 4), (5, 4), (2, 6), (4, 5), (5, 2), (7, 5), (4, 2), (6, 5), (5, 3), (3, 5), (6, 8), (4, 6), (5, 7), (3, 8), (7, 4), (4, 3), (7, 8), (2, 4), (8, 4)}
+    >>> drawPoints(floodFill(pentagonOutline, 5, 5))
+       O
+      OOO
+     OOOOO
+    OOOOOOO
+    OOOOOOO
+    OOOOOOO
+     OOOOO
+     OOOOO
+    """
 
     # Note: We're not going to use recursion here because 1) recursion is
     # overrated 2) on a large enough shape it would cause a stackoverflow
     # 3) flood fill doesn't strictly need recursion because it doesn't require
     # a stack and 4) recursion is overrated.
 
+    allPoints = set(points) # Use a set because the look ups will be faster.
+
     # Find the min/max x/y values to get the "boundaries" of this shape, to
     # prevent an infinite loop.
-    minx, miny = points[0]
-    maxx, maxy = points[0]
+    minx = miny = maxx = maxy = None
     for bpx, bpy in points:
+        if minx is None:
+            # This is the first point, so set all the min/max to it.
+            minx = maxx = bpx
+            miny = maxy = bpy
+            continue
         if bpx < minx:
             minx = bpx
         if bpx > maxx:
@@ -281,8 +491,6 @@ def floodFill(points, startx, starty):
         if bpy > maxy:
             maxy = bpy
 
-    allPoints = set(points) # Use a set because the look ups will be faster.
-    del points # This might help memory usage, though most likely the caller still has a reference to it.
     pointsToProcess = [(startx, starty)]
     while pointsToProcess:
         x, y = pointsToProcess.pop()
@@ -307,17 +515,45 @@ def floodFill(points, startx, starty):
 
 
 
-def circle(x, y, radius, filled=False, thickness=1, viewport=None):
+def circle(x, y, radius, filled=False, thickness=1):
+    """
+    Returns a generator that produces the (x, y) tuples for the outline of a circle.
+
+    `x` and `y` are the center of the circle, `radius` is the size.
+
+    (Note: The `filled` and `thickness` parameter is not yet implemented.)
+
+    >>> list(circle(0, 0, 7))
+    [(-6, 3), (0, 7), (4, -6), (-7, 0), (7, -1), (7, -2), (2, -7), (5, -5), (-5, 5), (-1, -7), (-2, -7), (-4, 6), (7, 2), (5, 5), (-5, -5), (6, -4), (6, 3), (-6, 4), (3, 6), (-3, 6), (6, 4), (1, -7), (6, -3), (7, 1), (-6, -4), (-7, 2), (-4, -6), (-2, 7), (-1, 7), (2, 7), (7, 0), (-7, -1), (-7, -2), (4, 6), (0, -7), (-6, -3), (-7, 1), (1, 7), (3, -6), (-3, -6)]
+    >>> drawPoints(circle(0, 0, 7))
+         OOOOO
+       OO     OO
+      O         O
+     O           O
+     O           O
+    O             O
+    O             O
+    O             O
+    O             O
+    O             O
+     O           O
+     O           O
+      O         O
+       OO     OO
+         OOOOO
+    """
     # Mid-point/Bresenham's Circle algorithm from https://www.daniweb.com/programming/software-development/threads/321181/python-bresenham-circle-arc-algorithm
     # and then modified to remove duplicates.
 
-    # The order that the xy points are returned is eccentric due to the optimizations in the code, it is not a simple clockwise/counterclockwise sweep.
-    if filled or thickness != 1 or viewport is not None:
-        raise NotImplementedError('The pybresenham module is under development. You can contribute at https://github.com/asweigart/pybresenham')
+    # The order that the xy points are returned is rather unconventional due to the optimizations in the code, it is not a simple clockwise/counterclockwise sweep.
+    if filled or thickness != 1:
+        raise NotImplementedError('The pybresenham module is under development and the filled, thickness, and endcap parameters are not implemented. You can contribute at https://github.com/asweigart/pybresenham')
 
     switch = 3 - (2 * radius)
     cx = 0
     cy = radius
+    """
+    # NOTE - This code leaves a point missing from the final circle on the left side. Until I can figure it out, I'm usin the old algorithm, which unforuntately defeats the purpose of having a generator.
     # 1st quarter/octant starts clockwise at 12 o'clock
     while cx <= cy:
         # Duplicates are formed whenever cx or cy is 0, or when cx == cy.
@@ -343,22 +579,93 @@ def circle(x, y, radius, filled=False, thickness=1, viewport=None):
             switch += (4 * (cx - cy)) + 10
             cy -= 1
         cx += 1
+    """
+    points = set()
+    while cx <= cy:
+        # first quarter first octant
+        points.add((cx + x,-cy + y))
+        # first quarter 2nd octant
+        points.add((cy + x,-cx + y))
+        # second quarter 3rd octant
+        points.add((cy + x,cx + y))
+        # second quarter 4.octant
+        points.add((cx + x,cy + y))
+        # third quarter 5.octant
+        points.add((-cx + x,cy + y))
+        # third quarter 6.octant
+        points.add((-cy + x,cx + y))
+        # fourth quarter 7.octant
+        points.add((-cy + x,-cx + y))
+        # fourth quarter 8.octant
+        points.add((-cx + x,-cy + y))
+        if switch < 0:
+            switch = switch + (4 * cx) + 6
+        else:
+            switch = switch + (4 * (cx - cy)) + 10
+            cy = cy - 1
+        cx = cx + 1
+    return iter(points)
 
 
-def square(left, top, length, filled=False, thickness=1, viewport=None):
-    """An alias for the rectangle() function, with simplified parameters."""
-    if thickness != 1 or viewport is not None:
-        raise NotImplementedError('The pybresenham module is under development. You can contribute at https://github.com/asweigart/pybresenham')
-
-    return rectangle(left, top, length, length, filled, thickness, viewport)
 
 
-def rectangle(left, top, width, height, filled=False, thickness=1, viewport=None):
+
+def square(left, top, length, filled=False, thickness=1):
+    """Returns a generator that produces (x, y) tuples for a square.
+    This function is an alias for the rectangle() function, with `length` passed for both the
+    `width` and `height` parameters.
+
+    The `left` and `top` arguments are the x and y coordinates for the topleft corner of the square.
+
+    If `filled` is `True`, the interior points are also returned.
+
+    >>> list(square(0, 0, 5))
+    [(0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (4, 1), (4, 2), (4, 3), (4, 4), (3, 4), (2, 4), (1, 4), (0, 4), (0, 3), (0, 2), (0, 1)]
+    >>> drawPoints(square(0, 0, 5))
+    OOOOO
+    O   O
+    O   O
+    O   O
+    OOOOO
+    >>> drawPoints(square(0, 0, 5, filled=True))
+    OOOOO
+    OOOOO
+    OOOOO
+    OOOOO
+    OOOOO
+    """
+    if thickness != 1:
+        raise NotImplementedError('The pybresenham module is under development and the filled, thickness, and endcap parameters are not implemented. You can contribute at https://github.com/asweigart/pybresenham')
+
+    return rectangle(left, top, length, length, filled, thickness)
+
+
+def rectangle(left, top, width, height, filled=False, thickness=1):
+    """
+    Returns a generator that produces (x, y) tuples for a rectangle.
+
+    The `left` and `top` arguments are the x and y coordinates for the topleft corner of the square.
+
+    If `filled` is `True`, the interior points are also returned.
+
+    >>> list(rectangle(0, 0, 10, 4))
+    [(0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (5, 0), (6, 0), (7, 0), (8, 0), (9, 0), (9, 1), (9, 2), (9, 3), (8, 3), (7, 3), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (1, 3), (0, 3), (0, 2), (0, 1)]
+    >>> drawPoints(rectangle(0, 0, 10, 4))
+    OOOOOOOOOO
+    O        O
+    O        O
+    OOOOOOOOOO
+    >>> drawPoints(rectangle(0, 0, 10, 4, filled=True))
+    OOOOOOOOOO
+    OOOOOOOOOO
+    OOOOOOOOOO
+    OOOOOOOOOO
+    """
 
     # Note: For perfomance, this function does not rely on line() to generate its points.
 
-    if thickness != 1 or viewport is not None:
-        raise NotImplementedError('The pybresenham module is under development. You can contribute at https://github.com/asweigart/pybresenham')
+    if thickness != 1:
+        raise NotImplementedError('The pybresenham module is under development and the filled, thickness, and endcap parameters are not implemented. You can contribute at https://github.com/asweigart/pybresenham')
 
     # Validate arguments
     _checkForIntOrFloat(left)
@@ -377,7 +684,7 @@ def rectangle(left, top, width, height, filled=False, thickness=1, viewport=None
             for x in range(left, left + width):
                 yield (x, y)
     else:
-        # Note: The -1 nad +2 adjustments here are to prevent duplicate coordinates of the corners being returned.
+        # Note: The `- 1` adjustments here are to prevent duplicate coordinates of the corners being returned.
 
         # Top side.
         y = top
@@ -400,17 +707,55 @@ def rectangle(left, top, width, height, filled=False, thickness=1, viewport=None
             yield (x, y)
 
 
-def diamond(x, y, radius, filled=False, thickness=1, viewport=None):
-
+def diamond(x, y, radius, filled=False, thickness=1):
     """
+    Returns a generator that produces (x, y) tuples in a diamond shape.
+    It is easier to predict the size of the diamond that this function
+    produces, as opposed to creatinga 4-sided polygon with `polygon()`
+    and rotating it 45 degrees.
+
+    The `left` and `top` arguments are the x and y coordinates for the topleft corner of the square.
+
+    The width and height of the diamond will be `2 * radius + 1`.
+
+    If `filled` is `True`, the interior points are also returned.
+
+    In this example diamond shape, the D characters represent the
+    drawn diamond, the . characters represent the "outside spaces",
+    and the ' characters represent the "inside spaces".
+    (The radius of this example diamond is 3.)
+
     ...D
-    ..D'D    In this example diamond shape, the D characters represent the
-    .D'''D   drawn diamond, the . characters represent the "outside spaces",
-    D'''''D  and the ' characters represent the "inside spaces".
-    .D'''D   (The radius of this example diamond is 3)
+    ..D'D
+    .D'''D
+    D'''''D
+    .D'''D
     ..D'D
     ...D
+
+    >>> list(diamond(0, 0, 3))
+    [(4, 0), (3, 1), (5, 1), (2, 2), (6, 2), (1, 3), (7, 3), (2, 4), (6, 4), (3, 5), (5, 5), (4, 6)]
+    >>> drawPoints(diamond(0, 0, 3))
+       O
+      O O
+     O   O
+    O     O
+     O   O
+      O O
+       O
+    >>> drawPoints(diamond(0, 0, 3, filled=True))
+       O
+      OOO
+     OOOOO
+    OOOOOOO
+     OOOOO
+      OOO
+       O
     """
+
+    if thickness != 1:
+        raise NotImplementedError('The pybresenham module is under development and the filled, thickness, and endcap parameters are not implemented. You can contribute at https://github.com/asweigart/pybresenham')
+
     outsideSpaces = radius
     insideSpaces = 1 # We'll only start incrementing insidesSpaces on the 2nd row.
 
@@ -438,34 +783,83 @@ def diamond(x, y, radius, filled=False, thickness=1, viewport=None):
             outsideSpaces += 1
             insideSpaces -= 2
 
+'''
+# TODO The following functions still need implementing.
 
 def ellipse(rotation=0, filled=False, thickness=1): # TODO rect-based paramters or center xy parameters?
-    raise NotImplementedError('The pybresenham module is under development. You can contribute at https://github.com/asweigart/pybresenham')
+    raise NotImplementedError('The pybresenham module is under development and the filled, thickness, and endcap parameters are not implemented. You can contribute at https://github.com/asweigart/pybresenham')
 
 
 def ellipseVertices():
-    raise NotImplementedError('The pybresenham module is under development. You can contribute at https://github.com/asweigart/pybresenham')
+    raise NotImplementedError('The pybresenham module is under development and the filled, thickness, and endcap parameters are not implemented. You can contribute at https://github.com/asweigart/pybresenham')
 
 
-def arc(x, y, radius, startAngle, stopAngle, rotation=0, filled=False, thickness=1, endcap=None, viewport=None):
-    raise NotImplementedError('The pybresenham module is under development. You can contribute at https://github.com/asweigart/pybresenham')
+def arc(x, y, radius, startAngle, stopAngle, rotation=0, filled=False, thickness=1, endcap=None):
+    raise NotImplementedError('The pybresenham module is under development and the filled, thickness, and endcap parameters are not implemented. You can contribute at https://github.com/asweigart/pybresenham')
 
 
 def arcVertices(x, y, radius, startAngle, stopAngle, numVertices):
-    raise NotImplementedError('The pybresenham module is under development. You can contribute at https://github.com/asweigart/pybresenham')
+    raise NotImplementedError('The pybresenham module is under development and the filled, thickness, and endcap parameters are not implemented. You can contribute at https://github.com/asweigart/pybresenham')
 
 
-def star(x, y, radius, points=5, rotation=0, filled=False, thickness=1, viewport=None):
-    raise NotImplementedError('The pybresenham module is under development. You can contribute at https://github.com/asweigart/pybresenham')
+def star(x, y, radius, points=5, rotation=0, filled=False, thickness=1):
+    raise NotImplementedError('The pybresenham module is under development and the filled, thickness, and endcap parameters are not implemented. You can contribute at https://github.com/asweigart/pybresenham')
     # TODO - will call polygonVertices() to get the verticies needed for the star.
 
 def starVertices(x, y, radius, points=5):
-    raise NotImplementedError('The pybresenham module is under development. You can contribute at https://github.com/asweigart/pybresenham')
+    raise NotImplementedError('The pybresenham module is under development and the filled, thickness, and endcap parameters are not implemented. You can contribute at https://github.com/asweigart/pybresenham')
+'''
+
+def grid(gridLeft, gridTop, numBoxesWide, numBoxesHigh, boxWidth, boxHeight, thickness=1):
+    """
+    Returns a generator that produces (x, y) tuples for a grid.
+
+    The `gridLeft` and `gridTop` arguments are the x and y coordinates for the topleft corner of the grid.
+
+    The `numBoxesWide` and `numBoxesHigh` arguments are the number of boxes (or, cells) in the grid.
+
+    The `boxWidth` and `boxHeight` are the size of each box (or, cell). This is the size of the box's
+    interior, and doesn't include the lines of the grid.
+
+    The `thickness` argument is how the thick the grid lines are.
+
+    The width of the grid is `(numBoxesWide * boxWidth) + (thickness * (numBoxesWide + 1))`.
+
+    The height of the grid is `(numBoxesHeight * boxheight) + (thickness * (numBoxesHeight + 1))`.
 
 
-def grid(gridLeft, gridTop, numBoxesWide, numBoxesHigh, boxWidth, boxHeight, thickness=1, viewport=None):
-    if viewport is not None:
-        raise NotImplementedError('The pybresenham module is under development. You can contribute at https://github.com/asweigart/pybresenham')
+    >>> list(grid(0, 0, 3, 2, 5, 4))
+    [(0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (5, 0), (6, 0), (7, 0), (8, 0), (9, 0), (10, 0), (11, 0), (12, 0), (13, 0), (14, 0), (15, 0), (16, 0), (17, 0), (18, 0), (0, 5), (1, 5), (2, 5), (3, 5), (4, 5), (5, 5), (6, 5), (7, 5), (8, 5), (9, 5), (10, 5), (11, 5), (12, 5), (13, 5), (14, 5), (15, 5), (16, 5), (17, 5), (18, 5), (0, 10), (1, 10), (2, 10), (3, 10), (4, 10), (5, 10), (6, 10), (7, 10), (8, 10), (9, 10), (10, 10), (11, 10), (12, 10), (13, 10), (14, 10), (15, 10), (16, 10), (17, 10), (18, 10), (0, 1), (0, 2), (0, 3), (0, 4), (0, 6), (0, 7), (0, 8), (0, 9), (6, 1), (6, 2), (6, 3), (6, 4), (6, 6), (6, 7), (6, 8), (6, 9), (12, 1), (12, 2), (12, 3), (12, 4), (12, 6), (12, 7), (12, 8), (12, 9), (18, 1), (18, 2), (18, 3), (18, 4), (18, 6), (18, 7), (18, 8), (18, 9)]
+
+    >>> drawPoints(grid(0, 0, 3, 2, 5, 4))
+    OOOOOOOOOOOOOOOOOOO
+    O     O     O     O
+    O     O     O     O
+    O     O     O     O
+    O     O     O     O
+    OOOOOOOOOOOOOOOOOOO
+    O     O     O     O
+    O     O     O     O
+    O     O     O     O
+    O     O     O     O
+    OOOOOOOOOOOOOOOOOOO
+    >>> drawPoints(grid(0, 0, 3, 2, 5, 4, thickness=2))
+    OOOOOOOOOOOOOOOOOOOOOOO
+    OOOOOOOOOOOOOOOOOOOOOOO
+    OO     OO     OO     OO
+    OO     OO     OO     OO
+    OO     OO     OO     OO
+    OO     OO     OO     OO
+    OOOOOOOOOOOOOOOOOOOOOOO
+    OOOOOOOOOOOOOOOOOOOOOOO
+    OO     OO     OO     OO
+    OO     OO     OO     OO
+    OO     OO     OO     OO
+    OO     OO     OO     OO
+    OOOOOOOOOOOOOOOOOOOOOOO
+    OOOOOOOOOOOOOOOOOOOOOOO
+
+    """
 
     # Validate arguments.
     _checkForIntOrFloat(gridLeft)
@@ -550,25 +944,25 @@ def grid(gridLeft, gridTop, numBoxesWide, numBoxesHigh, boxWidth, boxHeight, thi
                 if y not in intersectiony:
                     yield (x + gridLeft, y + gridTop)
 
-
-def gridInterior(gridLeft, gridTop, numBoxesWide, numBoxesHigh, boxWidth, boxHeight, thickness=1, viewport=None):
-    raise NotImplementedError('The pybresenham module is under development. You can contribute at https://github.com/asweigart/pybresenham')
+'''
+def gridInterior(gridLeft, gridTop, numBoxesWide, numBoxesHigh, boxWidth, boxHeight, thickness=1):
+    raise NotImplementedError('The pybresenham module is under development and the filled, thickness, and endcap parameters are not implemented. You can contribute at https://github.com/asweigart/pybresenham')
 
 
 def hexGrid():
-    raise NotImplementedError('The pybresenham module is under development. You can contribute at https://github.com/asweigart/pybresenham')
+    raise NotImplementedError('The pybresenham module is under development and the filled, thickness, and endcap parameters are not implemented. You can contribute at https://github.com/asweigart/pybresenham')
 
 
 def hexGridVertices():
-    raise NotImplementedError('The pybresenham module is under development. You can contribute at https://github.com/asweigart/pybresenham')
+    raise NotImplementedError('The pybresenham module is under development and the filled, thickness, and endcap parameters are not implemented. You can contribute at https://github.com/asweigart/pybresenham')
 
 
 def hexGridInterior():
-    raise NotImplementedError('The pybresenham module is under development. You can contribute at https://github.com/asweigart/pybresenham')
+    raise NotImplementedError('The pybresenham module is under development and the filled, thickness, and endcap parameters are not implemented. You can contribute at https://github.com/asweigart/pybresenham')
 
 
-def necker(left, top, width, height, depth, wireframe=True, rotation=0, filled=False, thickness=1, viewport=None):
-    raise NotImplementedError('The pybresenham module is under development. You can contribute at https://github.com/asweigart/pybresenham')
+def necker(left, top, width, height, depth, wireframe=True, rotation=0, filled=False, thickness=1):
+    raise NotImplementedError('The pybresenham module is under development and the filled, thickness, and endcap parameters are not implemented. You can contribute at https://github.com/asweigart/pybresenham')
     """
     The axii look like:        Positive width looks like:
 
@@ -581,26 +975,26 @@ def necker(left, top, width, height, depth, wireframe=True, rotation=0, filled=F
 
 
 def neckerSegments(left, top, width, height, depth, wireframe=True):
-    raise NotImplementedError('The pybresenham module is under development. You can contribute at https://github.com/asweigart/pybresenham')
+    raise NotImplementedError('The pybresenham module is under development and the filled, thickness, and endcap parameters are not implemented. You can contribute at https://github.com/asweigart/pybresenham')
 
 
 def bezier():
-    raise NotImplementedError('The pybresenham module is under development. You can contribute at https://github.com/asweigart/pybresenham')
+    raise NotImplementedError('The pybresenham module is under development and the filled, thickness, and endcap parameters are not implemented. You can contribute at https://github.com/asweigart/pybresenham')
 
 
 def bezierSegments():
-    raise NotImplementedError('The pybresenham module is under development. You can contribute at https://github.com/asweigart/pybresenham')
+    raise NotImplementedError('The pybresenham module is under development and the filled, thickness, and endcap parameters are not implemented. You can contribute at https://github.com/asweigart/pybresenham')
 
 
-def roundedBox(left, top, width, height, radius, rotation=0, filled=False, thickness=1, viewport=None):
-    raise NotImplementedError('The pybresenham module is under development. You can contribute at https://github.com/asweigart/pybresenham')
+def roundedBox(left, top, width, height, radius, rotation=0, filled=False, thickness=1):
+    raise NotImplementedError('The pybresenham module is under development and the filled, thickness, and endcap parameters are not implemented. You can contribute at https://github.com/asweigart/pybresenham')
 
 
 def roundedBoxSegments(left, top, width, height, radius):
-    raise NotImplementedError('The pybresenham module is under development. You can contribute at https://github.com/asweigart/pybresenham')
+    raise NotImplementedError('The pybresenham module is under development and the filled, thickness, and endcap parameters are not implemented. You can contribute at https://github.com/asweigart/pybresenham')
+'''
 
-
-def _drawPoints(points):
+def drawPoints(points):
     """A small debug function that takes an iterable of (x, y) integer tuples
     and draws them to the screen."""
     import sys
@@ -630,4 +1024,4 @@ def _drawPoints(points):
 
 
 if __name__ == '__main__':
-    doctest.testmod()
+    print(doctest.testmod())
