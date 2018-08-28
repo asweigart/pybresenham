@@ -1,4 +1,6 @@
+v0.0.6, 2018/08/28 -- Corrections to readme and pypi page.
+v0.0.5, 2018/08/27 -- Doc and unit test updates.
+v0.0.4, 2018/05/02 -- Corrected initial release.
+v0.0.3, 2018/05/02 -- Still trying to figure out what the new version of pypi wants
+v0.0.2, 2018/05/02 -- Problems with pypi
 v0.0.1, 2018/05/02 -- Initial release.
-v0.0.2, 2018/05/02 -- lol jk
-v0.0.3, 2018/05/02 -- still trying to figure out what the new version of pypi wants
-v0.0.4, 2018/05/02 -- Okay, this is the real initial release.

@@ -16,7 +16,7 @@
 # of yielding them one at a time? Otherwise we won't have enough info for the flood fill algorithm. Though I suppose we could just save the border
 # xy points as we yield them, and then use that list for the flood fill.
 
-__version__ = '0.0.4'
+__version__ = '0.0.6'
 
 import doctest
 import itertools
