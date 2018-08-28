@@ -129,10 +129,10 @@ def line(x1, y1, x2, y2, thickness=1, endcap=None, _skipFirst=False):
     >>> list(line(0, 0, 10, 3))
     [(0, 0), (1, 0), (2, 1), (3, 1), (4, 1), (5, 1), (6, 2), (7, 2), (8, 2), (9, 3), (10, 3)]
     >>> drawPoints(line(0, 0, 20, 3))
-    OOOO
-        OOOOOOO
-               OOOOOO
-                     OOOO
+    OOOO,,,,,,,,,,,,,,,,,
+    ,,,,OOOOOOO,,,,,,,,,,
+    ,,,,,,,,,,,OOOOOO,,,,
+    ,,,,,,,,,,,,,,,,,OOOO
     """
 
     if (thickness != 1) or (endcap is not None):
@@ -211,12 +211,12 @@ def lines(points, closed=False, thickness=1, endcap=None, _skipFirst=False):
     >>> list(lines([(0, 0), (10, 3), (5, 5)]))
     [(0, 0), (1, 0), (2, 1), (3, 1), (4, 1), (5, 1), (6, 2), (7, 2), (8, 2), (9, 3), (10, 3), (9, 4), (8, 4), (7, 4), (6, 5), (5, 5)]
     >>> drawPoints(lines([(0, 0), (10, 3), (5, 5)]))
-    OO
-      OOOO
-          OOO
-             OO
-           OOO
-         OO
+    OO,,,,,,,,,
+    ,,OOOO,,,,,
+    ,,,,,,OOO,,
+    ,,,,,,,,,OO
+    ,,,,,,,OOO,
+    ,,,,,OO,,,,
     """
 
     if thickness != 1 or endcap is not None:
@@ -314,37 +314,37 @@ def polygon(x, y, radius, sides, rotationDegrees=0, stretchHorizontal=1.0, stret
     >>> list(polygon(10, 10, 8, 5))
     [(9, 3), (8, 4), (7, 5), (6, 6), (5, 6), (4, 7), (3, 8), (3, 9), (4, 10), (4, 11), (4, 12), (5, 13), (5, 14), (6, 15), (6, 16), (7, 16), (8, 16), (9, 16), (10, 16), (11, 16), (12, 16), (13, 16), (14, 16), (14, 15), (15, 14), (15, 13), (16, 12), (16, 11), (16, 10), (17, 9), (17, 8), (16, 7), (15, 6), (14, 5), (13, 4), (12, 4), (11, 3), (10, 2)]
     >>> drawPoints(polygon(10, 10, 8, 5))
-           O
-          O O
-         O   OO
-        O      O
-      OO        O
-     O           O
-    O             O
-    O             O
-     O           O
-     O           O
-     O           O
-      O         O
-      O         O
-       O       O
-       OOOOOOOOO
+    ,,,,,,,O,,,,,,,
+    ,,,,,,O,O,,,,,,
+    ,,,,,O,,,OO,,,,
+    ,,,,O,,,,,,O,,,
+    ,,OO,,,,,,,,O,,
+    ,O,,,,,,,,,,,O,
+    O,,,,,,,,,,,,,O
+    O,,,,,,,,,,,,,O
+    ,O,,,,,,,,,,,O,
+    ,O,,,,,,,,,,,O,
+    ,O,,,,,,,,,,,O,
+    ,,O,,,,,,,,,O,,
+    ,,O,,,,,,,,,O,,
+    ,,,O,,,,,,,O,,,
+    ,,,OOOOOOOOO,,,
     >>> drawPoints(polygon(10, 10, 8, 5, rotationDegrees=20))
-         OO
-        O  OOO
-        O     OO
-       O        OO
-      O          O
-     O           O
-     O           O
-    O            O
-     O           O
-     O           O
-      O          O
-       O        OO
-        O     OO
-        O  OOO
-         OO
+    ,,,,,OO,,,,,,,
+    ,,,,O,,OOO,,,,
+    ,,,,O,,,,,OO,,
+    ,,,O,,,,,,,,OO
+    ,,O,,,,,,,,,,O
+    ,O,,,,,,,,,,,O
+    ,O,,,,,,,,,,,O
+    O,,,,,,,,,,,,O
+    ,O,,,,,,,,,,,O
+    ,O,,,,,,,,,,,O
+    ,,O,,,,,,,,,,O
+    ,,,O,,,,,,,,OO
+    ,,,,O,,,,,OO,,
+    ,,,,O,,OOO,,,,
+    ,,,,,OO,,,,,,,
     """
     if thickness != 1:
         raise NotImplementedError('The pybresenham module is under development and the filled, thickness, and endcap parameters are not implemented. You can contribute at https://github.com/asweigart/pybresenham')
@@ -386,38 +386,37 @@ def polygonVertices(x, y, radius, sides, rotationDegrees=0, stretchHorizontal=1.
     >>> list(polygonVertices(10, 10, 8, 5))
     [(10, 2.0), (3, 8.0), (6, 16.0), (14, 16.0), (17, 8.0)]
     >>> drawPoints(polygonVertices(10, 10, 8, 5))
-           O
-
-
-
-
-
-    O             O
-
-
-
-
-
-
-
-       O       O
+    ,,,,,,,O,,,,,,,
+    ,,,,,,,,,,,,,,,
+    ,,,,,,,,,,,,,,,
+    ,,,,,,,,,,,,,,,
+    ,,,,,,,,,,,,,,,
+    ,,,,,,,,,,,,,,,
+    O,,,,,,,,,,,,,O
+    ,,,,,,,,,,,,,,,
+    ,,,,,,,,,,,,,,,
+    ,,,,,,,,,,,,,,,
+    ,,,,,,,,,,,,,,,
+    ,,,,,,,,,,,,,,,
+    ,,,,,,,,,,,,,,,
+    ,,,,,,,,,,,,,,,
+    ,,,O,,,,,,,O,,,
     >>> drawPoints(polygonVertices(10, 10, 8, 5, rotationDegrees=20))
-         O
-
-
-                 O
-
-
-
-    O
-
-
-
-                 O
-
-
-         O
-
+    ,,,,,O,,,,,,,,
+    ,,,,,,,,,,,,,,
+    ,,,,,,,,,,,,,,
+    ,,,,,,,,,,,,,O
+    ,,,,,,,,,,,,,,
+    ,,,,,,,,,,,,,,
+    ,,,,,,,,,,,,,,
+    O,,,,,,,,,,,,,
+    ,,,,,,,,,,,,,,
+    ,,,,,,,,,,,,,,
+    ,,,,,,,,,,,,,,
+    ,,,,,,,,,,,,,O
+    ,,,,,,,,,,,,,,
+    ,,,,,,,,,,,,,,
+    ,,,,,O,,,,,,,,
     """
 
     # TODO - validate x, y, radius, sides
@@ -445,26 +444,26 @@ def floodFill(points, startx, starty):
     arbitrary shape) to begin filling from.
 
     >>> drawPoints(polygon(5, 5, 4, 5))
-       O
-      O O
-     O   O
-    O     O
-    O     O
-    O     O
-     O   O
-     OOOOO
+    ,,,O,,,
+    ,,O,O,,
+    ,O,,,O,
+    O,,,,,O
+    O,,,,,O
+    O,,,,,O
+    ,O,,,O,
+    ,OOOOO,
     >>> pentagonOutline = list(polygon(5, 5, 4, 5))
     >>> floodFill(pentagonOutline, 5, 5)
     {(7, 3), (4, 7), (4, 8), (5, 6), (6, 6), (7, 7), (6, 2), (5, 1), (3, 7), (2, 5), (8, 5), (5, 8), (6, 7), (3, 3), (5, 5), (7, 6), (4, 4), (6, 3), (3, 6), (3, 4), (8, 6), (6, 4), (5, 4), (2, 6), (4, 5), (5, 2), (7, 5), (4, 2), (6, 5), (5, 3), (3, 5), (6, 8), (4, 6), (5, 7), (3, 8), (7, 4), (4, 3), (7, 8), (2, 4), (8, 4)}
     >>> drawPoints(floodFill(pentagonOutline, 5, 5))
-       O
-      OOO
-     OOOOO
+    ,,,O,,,
+    ,,OOO,,
+    ,OOOOO,
     OOOOOOO
     OOOOOOO
     OOOOOOO
-     OOOOO
-     OOOOO
+    ,OOOOO,
+    ,OOOOO,
     """
 
     # Note: We're not going to use recursion here because 1) recursion is
@@ -527,21 +526,21 @@ def circle(x, y, radius, filled=False, thickness=1):
     >>> list(circle(0, 0, 7))
     [(-6, 3), (0, 7), (4, -6), (-7, 0), (7, -1), (7, -2), (2, -7), (5, -5), (-5, 5), (-1, -7), (-2, -7), (-4, 6), (7, 2), (5, 5), (-5, -5), (6, -4), (6, 3), (-6, 4), (3, 6), (-3, 6), (6, 4), (1, -7), (6, -3), (7, 1), (-6, -4), (-7, 2), (-4, -6), (-2, 7), (-1, 7), (2, 7), (7, 0), (-7, -1), (-7, -2), (4, 6), (0, -7), (-6, -3), (-7, 1), (1, 7), (3, -6), (-3, -6)]
     >>> drawPoints(circle(0, 0, 7))
-         OOOOO
-       OO     OO
-      O         O
-     O           O
-     O           O
-    O             O
-    O             O
-    O             O
-    O             O
-    O             O
-     O           O
-     O           O
-      O         O
-       OO     OO
-         OOOOO
+    ,,,,,OOOOO,,,,,
+    ,,,OO,,,,,OO,,,
+    ,,O,,,,,,,,,O,,
+    ,O,,,,,,,,,,,O,
+    ,O,,,,,,,,,,,O,
+    O,,,,,,,,,,,,,O
+    O,,,,,,,,,,,,,O
+    O,,,,,,,,,,,,,O
+    O,,,,,,,,,,,,,O
+    O,,,,,,,,,,,,,O
+    ,O,,,,,,,,,,,O,
+    ,O,,,,,,,,,,,O,
+    ,,O,,,,,,,,,O,,
+    ,,,OO,,,,,OO,,,
+    ,,,,,OOOOO,,,,,
     """
     # Mid-point/Bresenham's Circle algorithm from https://www.daniweb.com/programming/software-development/threads/321181/python-bresenham-circle-arc-algorithm
     # and then modified to remove duplicates.
@@ -620,13 +619,15 @@ def square(left, top, length, filled=False, thickness=1):
 
     If `filled` is `True`, the interior points are also returned.
 
+    NOTE: The `thickness` argument is not yet implemented.
+
     >>> list(square(0, 0, 5))
     [(0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (4, 1), (4, 2), (4, 3), (4, 4), (3, 4), (2, 4), (1, 4), (0, 4), (0, 3), (0, 2), (0, 1)]
     >>> drawPoints(square(0, 0, 5))
     OOOOO
-    O   O
-    O   O
-    O   O
+    O,,,O
+    O,,,O
+    O,,,O
     OOOOO
     >>> drawPoints(square(0, 0, 5, filled=True))
     OOOOO
@@ -649,12 +650,14 @@ def rectangle(left, top, width, height, filled=False, thickness=1):
 
     If `filled` is `True`, the interior points are also returned.
 
+    NOTE: The `thickness` argument is not yet implemented.
+
     >>> list(rectangle(0, 0, 10, 4))
     [(0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (5, 0), (6, 0), (7, 0), (8, 0), (9, 0), (9, 1), (9, 2), (9, 3), (8, 3), (7, 3), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (1, 3), (0, 3), (0, 2), (0, 1)]
     >>> drawPoints(rectangle(0, 0, 10, 4))
     OOOOOOOOOO
-    O        O
-    O        O
+    O,,,,,,,,O
+    O,,,,,,,,O
     OOOOOOOOOO
     >>> drawPoints(rectangle(0, 0, 10, 4, filled=True))
     OOOOOOOOOO
@@ -666,6 +669,7 @@ def rectangle(left, top, width, height, filled=False, thickness=1):
     # Note: For perfomance, this function does not rely on line() to generate its points.
 
     if thickness != 1:
+        # TODO - should the original left and top be for the thick border, or should thick borders go to the left and above of the left and top coordinates?
         raise NotImplementedError('The pybresenham module is under development and the filled, thickness, and endcap parameters are not implemented. You can contribute at https://github.com/asweigart/pybresenham')
 
     # Validate arguments
@@ -737,21 +741,21 @@ def diamond(x, y, radius, filled=False, thickness=1):
     >>> list(diamond(0, 0, 3))
     [(4, 0), (3, 1), (5, 1), (2, 2), (6, 2), (1, 3), (7, 3), (2, 4), (6, 4), (3, 5), (5, 5), (4, 6)]
     >>> drawPoints(diamond(0, 0, 3))
-       O
-      O O
-     O   O
-    O     O
-     O   O
-      O O
-       O
+    ,,,O,,,
+    ,,O,O,,
+    ,O,,,O,
+    O,,,,,O
+    ,O,,,O,
+    ,,O,O,,
+    ,,,O,,,
     >>> drawPoints(diamond(0, 0, 3, filled=True))
-       O
-      OOO
-     OOOOO
+    ,,,O,,,
+    ,,OOO,,
+    ,OOOOO,
     OOOOOOO
-     OOOOO
-      OOO
-       O
+    ,OOOOO,
+    ,,OOO,,
+    ,,,O,,,
     """
 
     if thickness != 1:
@@ -834,32 +838,31 @@ def grid(gridLeft, gridTop, numBoxesWide, numBoxesHigh, boxWidth, boxHeight, thi
 
     >>> drawPoints(grid(0, 0, 3, 2, 5, 4))
     OOOOOOOOOOOOOOOOOOO
-    O     O     O     O
-    O     O     O     O
-    O     O     O     O
-    O     O     O     O
+    O,,,,,O,,,,,O,,,,,O
+    O,,,,,O,,,,,O,,,,,O
+    O,,,,,O,,,,,O,,,,,O
+    O,,,,,O,,,,,O,,,,,O
     OOOOOOOOOOOOOOOOOOO
-    O     O     O     O
-    O     O     O     O
-    O     O     O     O
-    O     O     O     O
+    O,,,,,O,,,,,O,,,,,O
+    O,,,,,O,,,,,O,,,,,O
+    O,,,,,O,,,,,O,,,,,O
+    O,,,,,O,,,,,O,,,,,O
     OOOOOOOOOOOOOOOOOOO
     >>> drawPoints(grid(0, 0, 3, 2, 5, 4, thickness=2))
     OOOOOOOOOOOOOOOOOOOOOOO
     OOOOOOOOOOOOOOOOOOOOOOO
-    OO     OO     OO     OO
-    OO     OO     OO     OO
-    OO     OO     OO     OO
-    OO     OO     OO     OO
+    OO,,,,,OO,,,,,OO,,,,,OO
+    OO,,,,,OO,,,,,OO,,,,,OO
+    OO,,,,,OO,,,,,OO,,,,,OO
+    OO,,,,,OO,,,,,OO,,,,,OO
     OOOOOOOOOOOOOOOOOOOOOOO
     OOOOOOOOOOOOOOOOOOOOOOO
-    OO     OO     OO     OO
-    OO     OO     OO     OO
-    OO     OO     OO     OO
-    OO     OO     OO     OO
+    OO,,,,,OO,,,,,OO,,,,,OO
+    OO,,,,,OO,,,,,OO,,,,,OO
+    OO,,,,,OO,,,,,OO,,,,,OO
+    OO,,,,,OO,,,,,OO,,,,,OO
     OOOOOOOOOOOOOOOOOOOOOOO
     OOOOOOOOOOOOOOOOOOOOOOO
-
     """
 
     # Validate arguments.
@@ -995,9 +998,13 @@ def roundedBoxSegments(left, top, width, height, radius):
     raise NotImplementedError('The pybresenham module is under development and the filled, thickness, and endcap parameters are not implemented. You can contribute at https://github.com/asweigart/pybresenham')
 '''
 
-def drawPoints(points):
+def drawPoints(points, bg=','):
     """A small debug function that takes an iterable of (x, y) integer tuples
     and draws them to the screen."""
+
+    # Note: I set bg to ',' instead of '.' because using ... in the docstrings
+    # confuses doctest and makes it think it's Python's secondary ... prompt,
+    # causing doctest errors.
     import sys
     points = list(points)
     try:
@@ -1020,7 +1027,11 @@ def drawPoints(points):
     # Print out the character grid.
     for y in range(len(charGrid[0])):
         for x in range(len(charGrid)):
-            sys.stdout.write(charGrid[x][y])
+            if charGrid[x][y] in (None, ' '):
+                charToDraw = bg
+            else:
+                charToDraw = charGrid[x][y]
+            sys.stdout.write(charToDraw)
         print()
 
 
