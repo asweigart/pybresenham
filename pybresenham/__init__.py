@@ -292,10 +292,10 @@ def segments(segments, thickness=1, endcap=None):
 '''
 
 
-def polygon(x, y, radius, sides, rotationDegrees=0, stretchHorizontal=1.0, stretchVertical=1.0, filled=False, thickness=1):
+def polygon(centerx, centery, radius, sides, rotationDegrees=0, stretchHorizontal=1.0, stretchVertical=1.0, filled=False, thickness=1):
     """
     Returns a generator that produces the (x, y) points of a regular polygon.
-    `x` and `y` mark the center of the polygon, `radius` indicates the size,
+    `centerx` and `centery` mark the center of the polygon, `radius` indicates the size,
     `sides` specifies what kind of polygon it is.
 
     Odd-sided polygons have a pointed corner at the top and flat horizontal
@@ -364,10 +364,10 @@ def polygon(x, y, radius, sides, rotationDegrees=0, stretchHorizontal=1.0, stret
         return lines(vertices, closed=True, thickness=thickness, endcap=None)
 
 
-def polygonVertices(x, y, radius, sides, rotationDegrees=0, stretchHorizontal=1.0, stretchVertical=1.0):
+def polygonVertices(centerx, centery, radius, sides, rotationDegrees=0, stretchHorizontal=1.0, stretchVertical=1.0):
     """
     Returns a generator that produces the (x, y) points of the vertices of a regular polygon.
-    `x` and `y` mark the center of the polygon, `radius` indicates the size,
+    `centerx` and `centery` mark the center of the polygon, `radius` indicates the size,
     `sides` specifies what kind of polygon it is.
 
     Odd-sided polygons have a pointed corner at the top and flat horizontal
@@ -515,11 +515,11 @@ def floodFill(points, startx, starty):
 
 
 
-def circle(x, y, radius, filled=False, thickness=1):
+def circle(centerx, centery, radius, filled=False, thickness=1):
     """
     Returns a generator that produces the (x, y) tuples for the outline of a circle.
 
-    `x` and `y` are the center of the circle, `radius` is the size.
+    `centerx` and `centery` are the center of the circle, `radius` is the size.
 
     (Note: The `filled` and `thickness` parameter is not yet implemented.)
 
@@ -712,7 +712,7 @@ def rectangle(left, top, width, height, filled=False, thickness=1):
             yield (x, y)
 
 
-def diamond(x, y, radius, filled=False, thickness=1):
+def diamond(left, top, radius, filled=False, thickness=1):
     """
     Returns a generator that produces (x, y) tuples in a diamond shape.
     It is easier to predict the size of the diamond that this function
