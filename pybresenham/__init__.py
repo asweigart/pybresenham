@@ -16,7 +16,7 @@
 # of yielding them one at a time? Otherwise we won't have enough info for the flood fill algorithm. Though I suppose we could just save the border
 # xy points as we yield them, and then use that list for the flood fill.
 
-__version__ = '0.0.6'
+__version__ = '0.0.7'
 
 import doctest
 import itertools
@@ -583,21 +583,21 @@ def circle(centerx, centery, radius, filled=False, thickness=1):
     points = set()
     while cx <= cy:
         # first quarter first octant
-        points.add((cx + x,-cy + y))
+        points.add((cx + centerx,-cy + centery))
         # first quarter 2nd octant
-        points.add((cy + x,-cx + y))
+        points.add((cy + centerx,-cx + centery))
         # second quarter 3rd octant
-        points.add((cy + x,cx + y))
+        points.add((cy + centerx,cx + centery))
         # second quarter 4.octant
-        points.add((cx + x,cy + y))
+        points.add((cx + centerx,cy + centery))
         # third quarter 5.octant
-        points.add((-cx + x,cy + y))
+        points.add((-cx + centerx,cy + centery))
         # third quarter 6.octant
-        points.add((-cy + x,cx + y))
+        points.add((-cy + centerx,cx + centery))
         # fourth quarter 7.octant
-        points.add((-cy + x,-cx + y))
+        points.add((-cy + centerx,-cx + centery))
         # fourth quarter 8.octant
-        points.add((-cx + x,-cy + y))
+        points.add((-cx + centerx,-cy + centery))
         if switch < 0:
             switch = switch + (4 * cx) + 6
         else:
@@ -766,18 +766,18 @@ def diamond(left, top, radius, filled=False, thickness=1):
 
     for row in range(radius * 2 + 1):
         # Yield the leftside point in this row.
-        yield (outsideSpaces + 1 + x, row + y)
+        yield (outsideSpaces + 1 + left, row + top)
 
         if row != 0 and row != radius * 2:
             # (The first and last rows only have one point per row.)
 
             if filled:
                 # Yield all the interior spaces in this row.
-                for interiorx in range(outsideSpaces + 2 + x, outsideSpaces + insideSpaces + 2 + x):
-                    yield (interiorx, row + y) # No need for "+ x" here, we did that in the range() call.
+                for interiorx in range(outsideSpaces + 2 + left, outsideSpaces + insideSpaces + 2 + left):
+                    yield (interiorx, row + top) # No need for "+ x" here, we did that in the range() call.
 
             # Yield the rightside point in this row.
-            yield (outsideSpaces + insideSpaces + 2 + x, row + y)
+            yield (outsideSpaces + insideSpaces + 2 + left, row + top)
 
         # Modify outsideSpaces/insideSpaces as we move down the rows.
         if row < radius:
