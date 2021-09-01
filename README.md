@@ -136,3 +136,8 @@ The following functions aren't yet implemented:
 * roundedBoxVertices()
 
 The `thickness`, `filled`, `endcap`, and `viewport` parameters are still unimplemented. (Except for square() and rectangle(), which do implement the `filled` parameter.)
+
+Support
+-------
+
+If you find this project helpful and would like to support its development, [consider donating to its creator on Patreon](https://www.patreon.com/AlSweigart).
